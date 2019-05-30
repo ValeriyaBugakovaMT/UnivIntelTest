@@ -23,7 +23,47 @@
                 <td>
                     @city.Code
                 </td>
-            </tr>
+                <td>
+                    <button type="button" class="btn btn-primary btn-sm" data-toggle="modal" data-target="#@city.Code">
+                        Изменить/Удалить
+                    </button>
+                </td>
+                <td>
+                    <!-- Модальное окно -->
+                    <div class="modal fade" id="@city.Code" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+                        <div class="modal-dialog" role="document">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h4 class="modal-title" id="myModalLabel">Изменить/Удалить @city.Title</h4>
+                                </div>
+                                <div class="modal-body">
+                                    <table class="table">
+                                        <tr>
+                                            <td>
+                                                Название:
+                                            </td>
+                                            <td><input type="text" id="CityTitle-@city.Code" value="@city.Title"></td>
+
+                                        <tr>
+                                        <tr>
+                                            <td>
+                                                Код:
+                                            </td>
+                                            <td><input type="text" id="CityCode-@city.Code"  value="@city.Code"></td>
+
+                                        <tr>
+                                    </table>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-dismiss="modal" onclick="CancelChangeCity('@city.Code','@city.Title')">Закрыть</button>
+                                    <button type="button" class="btn btn-primary" onclick="ChangeCity('@city.Code')">Изменить</button>
+                                    <button type="button" class="btn btn-primary" onclick="RemoveCity('@city.Code')">Удалить</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </td>
+                </tr>
         }
     }
     else
@@ -72,6 +112,8 @@
         </div>
     </div>
 </div>
+
+
 <script type="text/javascript" src="~/Content/jquery.js"></script>
 <script>
     function Cancel() {
@@ -81,29 +123,70 @@
     }
     function AddCity() {
         var check = true;
-        check = $("#CityTitle").val() == '' ||$("#CityCode").val() == '' ? false : true;
+        check = $("#CityTitle").val() == '' || $("#CityCode").val() == '' ? false : true;
         if (check == false) {
             alert("не все поля заполнены");
         }
         else {
             var data = {
-                 
-                     Title: $("#CityTitle").val(),
-                      Code: $("#CityCode").val(),
-                 
+
+                Title: $("#CityTitle").val(),
+                Code: $("#CityCode").val(),
+
             };
             $.ajax({
-                 type: "POST",
-                 url: "addUser/",
-                 data: JSON.stringify(data),
-                 contentType: "application/json; charset=utf-8",
-                 dataType: "json",
+                type: "POST",
+                url: "addUser/",
+                data: JSON.stringify(data),
+                contentType: "application/json; charset=utf-8",
+                dataType: "json",
                 success: function (msg) {
                     if (mgs = "true") {
                         location.reload();
                     }
-                 }
+                }
             });
         }
+        }
+    function RemoveCity(code) {
+          var data = {
+                            Code: code,
+          };
+            $.ajax({
+                type: "POST",
+                url: "RemoveCity/",
+                data: JSON.stringify(data),
+                contentType: "application/json; charset=utf-8",
+                dataType: "json",
+                success: function (msg) {
+                    if (mgs = "true") {
+                        location.reload();
+                    }
+                }
+            });
+
+        }
+    function ChangeCity(code) {
+        var data = {
+            OlDCode: code,
+            Code: $("#CityCode-" + code).val(),
+            Title: $("#CityTitle-" + code).val()
+        };
+            $.ajax({
+                type: "POST",
+                url: "ChangeCity/",
+                data: JSON.stringify(data),
+                contentType: "application/json; charset=utf-8",
+                dataType: "json",
+                success: function (msg) {
+                    if (mgs = "true") {
+                        location.reload();
+                    }
+                }
+            });
     }
-    </script>
+    function CancelChangeCity(code, title) {
+        $("#CityCode-" + code).val(code);
+        $("#CityTitle-" + code).val(title);
+    }
+</script>

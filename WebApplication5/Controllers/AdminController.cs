@@ -48,5 +48,20 @@ namespace WebApplication5.Controllers
             var model = db.DictCities.ToList();
             return View(model);
         }
+        public string RemoveCity(string code)
+        {
+            var city = db.DictCities.SingleOrDefault(m => m.Code ==code);
+            db.DictCities.Remove(city);
+            db.SaveChanges();
+            return "true";
+        }
+        public string ChangeCity(string OLDCode,string Code, string Title)
+        {
+            var city = db.DictCities.SingleOrDefault(m => m.Code == OLDCode);
+            city.Code = Code;
+            city.Title = Title;
+            db.SaveChanges();
+            return "true";
+        }
     }
 }
