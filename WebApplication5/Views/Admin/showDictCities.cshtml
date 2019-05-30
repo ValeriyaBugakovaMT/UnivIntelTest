@@ -1,0 +1,109 @@
+﻿@using WebApplication5.Models
+@model List<DictCities>
+@{
+    ViewBag.Title = "showDictCities";
+}
+
+<h3>Города</h3>
+<table class="table">
+    <thead>
+        <tr>
+            <th scope="col">Название</th>
+            <th scope="col">Код</th>
+        </tr>
+    </thead>
+    @if (Model.Count() > 0)
+    {
+        foreach (var city in Model)
+        {
+            <tr>
+                <td>
+                    @city.Title
+                </td>
+                <td>
+                    @city.Code
+                </td>
+            </tr>
+        }
+    }
+    else
+    {
+        <tr>
+            <td>
+                Справочник пуст
+            </td>
+        </tr>
+    }
+
+</table>
+<button type="button" class="btn btn-primary btn-sm" data-toggle="modal" data-target="#myModal">
+    Добавить город
+</button>
+
+<!-- Модальное окно -->
+<div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title" id="myModalLabel">Добавление города</h4>
+            </div>
+            <div class="modal-body">
+                <table class="table">
+                    <tr>
+                        <td>
+                            Название:
+                        </td>
+                        <td><input type="text" id="CityTitle"></td>
+
+                    <tr>
+                    <tr>
+                        <td>
+                            Код:
+                        </td>
+                        <td><input type="text" id="CityCode"></td>
+
+                    <tr>
+                </table>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal" onclick="Cancel()">Закрыть</button>
+                <button type="button" class="btn btn-primary" onclick="AddCity()">Сохранить</button>
+            </div>
+        </div>
+    </div>
+</div>
+<script type="text/javascript" src="~/Content/jquery.js"></script>
+<script>
+    function Cancel() {
+        $("#CityTitle").val('');
+        $("#CityCode").val('');
+
+    }
+    function AddCity() {
+        var check = true;
+        check = $("#CityTitle").val() == '' ||$("#CityCode").val() == '' ? false : true;
+        if (check == false) {
+            alert("не все поля заполнены");
+        }
+        else {
+            var data = {
+                 
+                     Title: $("#CityTitle").val(),
+                      Code: $("#CityCode").val(),
+                 
+            };
+            $.ajax({
+                 type: "POST",
+                 url: "addUser/",
+                 data: JSON.stringify(data),
+                 contentType: "application/json; charset=utf-8",
+                 dataType: "json",
+                success: function (msg) {
+                    if (mgs = "true") {
+                        location.reload();
+                    }
+                 }
+            });
+        }
+    }
+    </script>
