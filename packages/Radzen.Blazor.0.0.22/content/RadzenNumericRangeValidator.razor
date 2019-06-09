@@ -1,0 +1,74 @@
+﻿@using Radzen
+@implements IRadzenFormValidator
+@if(Visible && !IsValid) 
+{
+<div class="ui-message ui-messages-error">
+ @Text
+</div>
+}
+@functions {
+    [Parameter]
+    public string Style { get; set; }
+
+    [Parameter]
+    public string Text { get; set; } = "Not in the valid range";
+
+    [Parameter]
+    public string Component { get; set; }
+
+    [Parameter]
+    public int? Min { get; set; }
+
+    [Parameter]
+    public int? Max { get; set; }
+
+    dynamic _form;
+
+    [CascadingParameter]
+    public dynamic Form
+    {
+        get
+        {
+            return _form;
+        }
+        set
+        {
+            if (_form != value)
+            {
+                _form = value;
+                _form.AddComponent(this);
+            }
+        }
+    }
+
+    [Parameter]
+    public bool Visible { get; set; } = true;
+
+    public bool IsValid
+    {
+        get
+        {
+            if (ComponentRef != null)
+            {
+                dynamic value = ((dynamic)ComponentRef).Value;
+
+                if(Min.HasValue && ((value != null && value < Min) || value == null)) {
+                    return false;
+                }
+
+                if(Max.HasValue && (value != null && value > Max)) {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+    }
+
+    public IRadzenFormComponent ComponentRef { get; set; }
+    public void Validate(IRadzenFormComponent component)
+    {
+        ComponentRef = component;
+        StateHasChanged();
+    }
+}

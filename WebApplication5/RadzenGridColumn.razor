@@ -1,0 +1,149 @@
+﻿@typeparam TItem
+@functions {
+    [Parameter]
+    public string Title { get; set; }
+
+    [Parameter]
+    public string Property { get; set; }
+
+    [Parameter]
+    public string SortProperty { get; set; }
+
+    [Parameter]
+    public string FilterProperty { get; set; }
+
+    [Parameter]
+    public object FilterValue { get; set; }
+
+
+    string _filterOperator;
+
+    [Parameter]
+    public string FilterOperator
+    {
+        get
+        {
+            if (string.IsNullOrEmpty(_filterOperator))
+            {
+                _filterOperator = Type == "string" && string.IsNullOrEmpty(Format) ? "contains" : "eq";
+            }
+
+            return _filterOperator;
+        }
+        set
+        {
+            if (_filterOperator != value)
+            {
+                _filterOperator = value;
+            }
+        }
+    }
+
+    Dictionary<string, string> _filterOperators;
+    public Dictionary<string, string> FilterOperators
+    {
+        get
+        {
+            if (_filterOperators == null)
+            {
+                _filterOperators = new Dictionary<string, string>();
+
+                if (Type == "string" && string.IsNullOrEmpty(Format))
+                {
+                    _filterOperators.Add("startswith", "Starts with");
+                    _filterOperators.Add("contains", "Contains");
+                    _filterOperators.Add("endswith", "Ends with");
+                }
+
+                _filterOperators.Add("eq", "Equals");
+                _filterOperators.Add("ne", "Not equals");
+                _filterOperators.Add("lt", "Less than");
+                _filterOperators.Add("le", "Less than or equals");
+                _filterOperators.Add("gt", "Greater than");
+                _filterOperators.Add("ge", "Greater than or equals");
+            }
+
+            return _filterOperators;
+        }
+    }
+
+    [Parameter]
+    public string Width { get; set; }
+
+    [Parameter]
+    public string Type { get; set; } = "string";
+
+    [Parameter]
+    public string Format { get; set; }
+
+    [Parameter]
+    public string FormatString { get; set; }
+
+    [Parameter]
+    public bool Filterable { get; set; } = true;
+
+    [Parameter]
+    internal bool FilterVisible { get; set; }
+
+    [Parameter]
+    public bool Sortable { get; set; } = true;
+
+    [Parameter]
+    public bool Bubble { get; set; } = true;
+
+    [Parameter]
+    public RenderFragment<TItem> Template { get; set; }
+
+    RadzenGrid<TItem> _grid;
+
+    [CascadingParameter]
+    public RadzenGrid<TItem> Grid
+    {
+        get
+        {
+            return _grid;
+        }
+        set
+        {
+            if (_grid != value)
+            {
+                _grid = value;
+                _grid.AddColumn(this);
+            }
+        }
+    }
+
+    public string GetStyle()
+    {
+        var style = new List<string>();
+
+        if (Width != null)
+        {
+            style.Add($"width:{Width}");
+        }
+
+        return string.Join(";", style);
+    }
+
+    public string GetSortProperty()
+    {
+        if(!string.IsNullOrEmpty(SortProperty))
+        {
+            return SortProperty;
+        } else
+        {
+            return Property;
+        }
+    }
+
+    public string GetFilterProperty()
+    {
+        if(!string.IsNullOrEmpty(FilterProperty))
+        {
+            return FilterProperty;
+        } else
+        {
+            return Property;
+        }
+    }
+}

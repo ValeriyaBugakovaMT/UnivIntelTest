@@ -1,0 +1,112 @@
+﻿@if(Visible) 
+{
+@if (AllowCollapse)
+{
+    <fieldset class="ui-fieldset ui-widget ui-widget-content ui-corner-all ui-fieldset-toggleable" style="@Style">
+        <legend class="ui-fieldset-legend ui-corner-all ui-state-default ui-unselectable-text" style="white-space:nowrap">
+
+            <a href="javascript:void(0)" class="ng-tns-c5-5" aria-controls="ui-fieldset-0-content" aria-expanded="false" onclick=@Toggle>
+                @if (Collapsed)
+                {
+                    <span class="ui-fieldset-toggler pi pi-w pi-plus" ng-reflect-klass="ui-fieldset-toggler pi pi-w"></span>
+                }
+                else
+                {
+                    <span class="ui-fieldset-toggler pi pi-w pi-minus"></span>
+                }
+
+                @if (!string.IsNullOrEmpty(Icon))
+                {
+                    <i class="material-icons">@Icon</i><span class="material-icons-label">@Text</span>
+                }
+                else
+                {
+                    <span class="ui-fieldset-legend-text">@Text</span>
+                }
+                @HeaderTemplate
+
+            </a>
+        </legend>
+        <div class="ui-fieldset-content-wrapper ng-trigger ng-trigger-fieldsetContent" role="region" id="ui-fieldset-0-content" aria-hidden="false" style="@contentStyle">
+            <div class="ui-fieldset-content">
+                @ChildContent
+            </div>
+        </div>
+    </fieldset>
+}
+else
+{
+    <fieldset class="ui-fieldset ui-widget ui-widget-content ui-corner-all" style="@Style">
+        <legend class="ui-fieldset-legend ui-corner-all ui-state-default ui-unselectable-text" style="white-space:nowrap">
+            @if (!string.IsNullOrEmpty(Icon))
+            {
+                <i class="material-icons">@Icon</i><span class="material-icons-label">@Text</span>
+            }
+            else
+            {
+                <span class="ui-fieldset-legend-text">@Text</span>
+            }
+            @HeaderTemplate
+        </legend>
+        <div class="ui-fieldset-content-wrapper ng-trigger ng-trigger-fieldsetContent" role="region" id="ui-fieldset-0-content" aria-hidden="false">
+            <div class="ui-fieldset-content">
+                @ChildContent
+            </div>
+        </div>
+    </fieldset>
+}
+}
+@functions {
+    [Parameter]
+    public string Style { get; set; }
+
+    [Parameter]
+    public bool AllowCollapse { get; set; }
+
+    [Parameter]
+    public bool Collapsed { get; set; }
+
+    [Parameter]
+    public string Icon { get; set; }
+
+    [Parameter]
+    public string Text { get; set; } = "";
+
+    [Parameter]
+    public RenderFragment HeaderTemplate { get; set; }
+
+    [Parameter]
+    public RenderFragment ChildContent { get; set; }
+
+    [Parameter]
+    public Action Expand { get; set; }
+
+    [Parameter]
+    public Action Collapse { get; set; }
+
+    [Parameter]
+    public bool Visible { get; set; } = true;
+
+    string contentStyle = "";
+
+    void Toggle()
+    {
+        Collapsed = !Collapsed;
+        contentStyle = Collapsed ? "height: 0px;" : "";
+
+        if (Collapsed)
+        {
+            Collapse?.Invoke();
+        }
+        else
+        {
+            Expand?.Invoke();
+        }
+    }
+
+    protected override Task OnParametersSetAsync()
+    {
+        contentStyle = Collapsed ? "height: 0px;" : "";
+        return base.OnParametersSetAsync();
+    }
+}

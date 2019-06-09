@@ -1,0 +1,89 @@
+﻿@if (Tabs != null)
+{
+    <CascadingValue Value=this>
+        @Tabs
+    </CascadingValue>
+}
+@if (Visible)
+{
+    <div style="@Style" class="ui-tabview ui-widget ui-widget-content ui-corner-all ui-tabview-top">
+        <ul role="tablist" class="ui-tabview-nav ui-helper-reset ui-helper-clearfix ui-widget-header ui-corner-all">
+            @for(var i = 0; i < tabs.Count; i++)
+            {
+                var tab = tabs[i];
+                var selectedStyle = tab.Selected ? "ui-tabview-selected" : "";
+                var selectedAria = tab.Selected ? "true" : "false";
+                <li role="presentation" class='@($"ui-state-default ui-corner-top {selectedStyle} ui-state-active")'>
+                    <a onclick="@((args) => SelectTab(tab))" href="javascript:void(0)" role="tab" id='@($"ui-tabpanel-{i}-label")' aria-selected="@(selectedAria)" aria-controls='@($"ui-tabpanel-{i}")'>
+                        <span class="ui-tabview-title">@tab.Text</span>
+                    </a>
+                </li>
+            }
+            </ul>
+        <div class="ui-tabview-panels">
+            @for (var i = 0; i < tabs.Count; i++)
+            {
+                var tab = tabs[i];
+                var ariaHidden = tab.Selected ? "false" : "true";
+                @if(tab.Selected)
+                { 
+                <div class="ui-tabview-panel ui-widget-content" role="tabpanel" id='@($"ui-tabpanel-{i}")' aria-hidden="@(ariaHidden)" aria-labelledby='@($"ui-tabpanel-{i}-label")'>
+                    @if (tab.ChildContent != null)
+                    {
+                        @tab.ChildContent
+                    }
+                </div>
+                }
+            }
+        </div>
+    </div>
+}
+
+@functions {
+    [Parameter]
+    public string Style { get; set; }
+
+    [Parameter]
+    public bool Visible { get; set; } = true;
+
+    [Parameter]
+    public int SelectedIndex { get; set; }
+
+    [Parameter]
+    public Action<int> Change { get; set; }
+
+    [Parameter]
+    public RenderFragment Tabs { get; set; }
+
+    List<RadzenTabsItem> tabs = new List<RadzenTabsItem>();
+
+    public void AddTab(RadzenTabsItem tab)
+    {
+        if (tabs.IndexOf(tab) == -1)
+        {
+            if(tabs.Count == 0)
+            {
+                tab.Selected = true;
+            }
+
+            tabs.Add(tab);
+            StateHasChanged();
+        }
+    }
+
+    protected void SelectTab(RadzenTabsItem tab)
+    {
+        foreach (var t in tabs)
+        {
+            t.Selected = false;
+        }
+
+        tab.Selected = true;
+
+        SelectedIndex = tabs.IndexOf(tab);
+
+        Change?.Invoke(SelectedIndex);
+
+        StateHasChanged();
+    }
+}

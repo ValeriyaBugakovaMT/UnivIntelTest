@@ -1,0 +1,26 @@
+﻿@if(Visible) 
+{
+<NavLink class="link" style="@Style" href="@Path">
+@if(!string.IsNullOrEmpty(Icon))
+{
+    <i class="material-icons link-icon">@Icon</i>
+}
+<span class="link-text">@Text</span>
+</NavLink>
+}
+@functions {
+    [Parameter]
+    public string Style { get; set; }
+
+    [Parameter]
+    public string Icon { get; set; }
+
+    [Parameter]
+    public string Text { get; set; } = "";
+
+    [Parameter]
+    public string Path { get; set; } = "";
+
+    [Parameter]
+    public bool Visible { get; set; } = true;
+}

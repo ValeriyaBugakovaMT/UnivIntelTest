@@ -1,0 +1,83 @@
+﻿@implements IDisposable
+
+@if (visible)
+{
+
+<div class="ui-dialog ui-widget ui-widget-content ui-corner-all ui-shadow ui-dialog-draggable ng-trigger ng-trigger-dialogState"
+        role="dialog" aria-labelledby="ui-dialog-0-label" style=@($"display: block; width: {options.Width}; min-width: 150px; min-height: 150px; z-index: 1001; opacity: 1;position:absolute;top:{options.Top};left:{options.Left};")>
+    <div class="ui-dialog-titlebar ui-widget-header ui-helper-clearfix ui-corner-top">
+        <span class="ui-dialog-title" id="ui-dialog-0-label">@title</span>
+        <a href="javascript:void(0)" onclick="@((args) => Service.Close())" role="button" class="ui-dialog-titlebar-icon ui-dialog-titlebar-close ui-corner-all">
+            <span class="pi pi-times"></span>
+        </a>
+    </div>
+    <div class="ui-dialog-content ui-widget-content" style=@($"max-height:600px;height: {options.Height}")>
+        @(DrawComponent())
+    </div>
+    <div class="ui-resizable-handle ui-resizable-se ui-icon ui-icon-gripsmall-diagonal-se" style="z-index: 90;"></div>
+</div>
+
+<div class="ui-widget-overlay ui-dialog-mask" style="z-index: 1000;"></div>
+}
+
+@functions {
+    [Inject] private DialogService Service { get; set; }
+
+    RenderFragment DrawComponent()
+    {
+        return new RenderFragment(builder =>
+        {
+            var i = 0;
+            builder.OpenComponent(i, this.type);
+
+            if (this.parameters != null)
+            {
+                foreach (var parameter in this.parameters)
+                {
+                    builder.AddAttribute(i++, parameter.Key, parameter.Value);
+                }
+            }
+
+            builder.CloseComponent();
+        });
+    }
+
+    bool visible;
+    string title;
+    Type type;
+
+    DialogOptions options;
+    Dictionary<string, object> parameters;
+
+    public void Open(string title, Type type, Dictionary<string, object> parameters, DialogOptions options)
+    {
+        this.type = type;
+        this.title = title;
+        this.visible = true;
+
+        this.parameters = parameters;
+        this.options = options;
+
+        Invoke(() => { StateHasChanged(); });
+    }
+
+
+    public void Close(dynamic result)
+    {
+        this.visible = false;
+
+        Invoke(() => { StateHasChanged(); });
+    }
+
+    public void Dispose()
+    {
+        Service.OnOpen -= Open;
+        Service.OnClose -= Close;
+    }
+
+    protected override void OnInit()
+    {
+        Service.OnOpen += Open;
+        Service.OnClose += Close;
+    }
+}

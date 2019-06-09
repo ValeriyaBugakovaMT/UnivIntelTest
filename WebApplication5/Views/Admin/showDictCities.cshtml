@@ -1,4 +1,6 @@
 ﻿@using WebApplication5.Models
+@using System.Threading;
+
 @model List<DictCities>
 @{
     ViewBag.Title = "showDictCities";
@@ -49,7 +51,7 @@
                                             <td>
                                                 Код:
                                             </td>
-                                            <td><input type="text" id="CityCode-@city.Code"  value="@city.Code"></td>
+                                            <td><input type="text" id="CityCode-@city.Code" value="@city.Code"></td>
 
                                         <tr>
                                     </table>
@@ -63,7 +65,7 @@
                         </div>
                     </div>
                 </td>
-                </tr>
+            </tr>
         }
     }
     else
@@ -107,12 +109,19 @@
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-dismiss="modal" onclick="Cancel()">Закрыть</button>
-                <button type="button" class="btn btn-primary" onclick="AddCity()">Сохранить</button>
+                <button type="button" class="btn btn-primary" onclick="">Сохранить</button>
             </div>
         </div>
     </div>
 </div>
-
+@functions{
+    private bool ischecked = false;
+     void AddCity(string a)
+    {
+        ischecked = true;
+        // return ischecked;
+    }
+}
 
 <script type="text/javascript" src="~/Content/jquery.js"></script>
 <script>
@@ -121,69 +130,69 @@
         $("#CityCode").val('');
 
     }
-    function AddCity() {
-        var check = true;
-        check = $("#CityTitle").val() == '' || $("#CityCode").val() == '' ? false : true;
-        if (check == false) {
-            alert("не все поля заполнены");
-        }
-        else {
-            var data = {
+    //function AddCity() {
+    //    var check = true;
+    //    check = $("#CityTitle").val() == '' || $("#CityCode").val() == '' ? false : true;
+    //    if (check == false) {
+    //        alert("не все поля заполнены");
+    //    }
+    //    else {
+    //        var data = {
 
-                Title: $("#CityTitle").val(),
-                Code: $("#CityCode").val(),
+    //            Title: $("#CityTitle").val(),
+    //            Code: $("#CityCode").val(),
 
-            };
-            $.ajax({
-                type: "POST",
-                url: "addUser/",
-                data: JSON.stringify(data),
-                contentType: "application/json; charset=utf-8",
-                dataType: "json",
-                success: function (msg) {
-                    if (mgs = "true") {
-                        location.reload();
-                    }
-                }
-            });
-        }
-        }
+    //        };
+    //        $.ajax({
+    //            type: "POST",
+    //            url: "addUser/",
+    //            data: JSON.stringify(data),
+    //            contentType: "application/json; charset=utf-8",
+    //            dataType: "json",
+    //            success: function (msg) {
+    //                if (mgs = "true") {
+    //                    location.reload();
+    //                }
+    //            }
+    //        });
+    //    }
+    //    }
     function RemoveCity(code) {
-          var data = {
-                            Code: code,
-          };
-            $.ajax({
-                type: "POST",
-                url: "RemoveCity/",
-                data: JSON.stringify(data),
-                contentType: "application/json; charset=utf-8",
-                dataType: "json",
-                success: function (msg) {
-                    if (mgs = "true") {
-                        location.reload();
-                    }
+        var data = {
+            Code: code,
+        };
+        $.ajax({
+            type: "POST",
+            url: "RemoveCity/",
+            data: JSON.stringify(data),
+            contentType: "application/json; charset=utf-8",
+            dataType: "json",
+            success: function (msg) {
+                if (mgs = "true") {
+                    location.reload();
                 }
-            });
+            }
+        });
 
-        }
+    }
     function ChangeCity(code) {
         var data = {
             OlDCode: code,
             Code: $("#CityCode-" + code).val(),
             Title: $("#CityTitle-" + code).val()
         };
-            $.ajax({
-                type: "POST",
-                url: "ChangeCity/",
-                data: JSON.stringify(data),
-                contentType: "application/json; charset=utf-8",
-                dataType: "json",
-                success: function (msg) {
-                    if (mgs = "true") {
-                        location.reload();
-                    }
+        $.ajax({
+            type: "POST",
+            url: "ChangeCity/",
+            data: JSON.stringify(data),
+            contentType: "application/json; charset=utf-8",
+            dataType: "json",
+            success: function (msg) {
+                if (mgs = "true") {
+                    location.reload();
                 }
-            });
+            }
+        });
     }
     function CancelChangeCity(code, title) {
         $("#CityCode-" + code).val(code);

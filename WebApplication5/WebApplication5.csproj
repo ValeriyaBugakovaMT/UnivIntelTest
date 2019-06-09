@@ -23,6 +23,7 @@
     <UseGlobalApplicationHostFile />
     <NuGetPackageImportStamp>
     </NuGetPackageImportStamp>
+    <WebGreaseLibPath>..\packages\WebGrease.1.5.2\lib</WebGreaseLibPath>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -43,6 +44,12 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Antlr3.Runtime, Version=3.4.1.9004, Culture=neutral, PublicKeyToken=eb42632606e9261f, processorArchitecture=MSIL">
+      <HintPath>..\packages\Antlr.3.4.1.9004\lib\Antlr3.Runtime.dll</HintPath>
+    </Reference>
+    <Reference Include="dotless.Core, Version=1.4.0.0, Culture=neutral, PublicKeyToken=96b446c9e63eae34, processorArchitecture=MSIL">
+      <HintPath>..\packages\dotless.1.4.0.0\lib\dotless.Core.dll</HintPath>
+    </Reference>
     <Reference Include="EntityFramework, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
       <HintPath>..\packages\EntityFramework.6.2.0\lib\net45\EntityFramework.dll</HintPath>
     </Reference>
@@ -146,6 +153,12 @@
     <Reference Include="System.Core" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="System.Web.Extensions" />
+    <Reference Include="System.Web.Optimization, Version=1.1.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.AspNet.Web.Optimization.1.1.2\lib\net40\System.Web.Optimization.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Web.Optimization.Less, Version=1.3.0.0, Culture=neutral, PublicKeyToken=9b7581e0240fe480, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Web.Optimization.Less.1.3.4\lib\net40\System.Web.Optimization.Less.dll</HintPath>
+    </Reference>
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Drawing" />
     <Reference Include="System.Web" />
@@ -153,6 +166,9 @@
     <Reference Include="System.Configuration" />
     <Reference Include="System.Web.Services" />
     <Reference Include="System.EnterpriseServices" />
+    <Reference Include="WebGrease, Version=1.5.2.14234, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\WebGrease.1.5.2\lib\WebGrease.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Reference Include="System.Web.Razor">
@@ -203,12 +219,47 @@
     <Content Include="Global.asax" />
     <Content Include="Scripts\bootstrap.js" />
     <Content Include="Scripts\bootstrap.min.js" />
+    <Content Include="RadzenTextBox.razor" />
+    <Content Include="RadzenTextArea.razor" />
+    <Content Include="RadzenTemplateForm.razor" />
+    <Content Include="RadzenTabsItem.razor" />
+    <Content Include="RadzenTabs.razor" />
+    <Content Include="RadzenSSRSViewerParameter.razor" />
+    <Content Include="RadzenSSRSViewer.razor" />
+    <Content Include="RadzenRequiredValidator.razor" />
+    <Content Include="RadzenPassword.razor" />
+    <Content Include="RadzenPanel.razor" />
+    <Content Include="RadzenNumericRangeValidator.razor" />
+    <Content Include="RadzenNumeric.razor" />
+    <Content Include="RadzenListBox.razor" />
+    <Content Include="RadzenLink.razor" />
+    <Content Include="RadzenLengthValidator.razor" />
+    <Content Include="RadzenLabel.razor" />
+    <Content Include="RadzenImage.razor" />
+    <Content Include="RadzenIcon.razor" />
+    <Content Include="RadzenHtml.razor" />
+    <Content Include="RadzenHeading.razor" />
+    <Content Include="RadzenGridColumn.razor" />
+    <Content Include="RadzenGrid.razor" />
+    <Content Include="RadzenFileInput.razor" />
+    <Content Include="RadzenFieldset.razor" />
+    <Content Include="RadzenDropDown.razor" />
+    <Content Include="RadzenDialog.razor" />
+    <Content Include="RadzenDatePicker.razor" />
+    <Content Include="RadzenDataList.razor" />
+    <Content Include="RadzenContent.razor" />
+    <Content Include="RadzenCompareValidator.razor" />
+    <Content Include="RadzenCheckBox.razor" />
+    <Content Include="RadzenCard.razor" />
+    <Content Include="RadzenButton.razor" />
     <None Include="Scripts\jquery-3.3.1.intellisense.js" />
     <Content Include="Scripts\jquery-3.3.1.js" />
     <Content Include="Scripts\jquery-3.3.1.min.js" />
     <Content Include="Scripts\jquery-3.3.1.slim.js" />
     <Content Include="Scripts\jquery-3.3.1.slim.min.js" />
     <Content Include="Scripts\modernizr-2.8.3.js" />
+    <Content Include="Scripts\vue.js" />
+    <Content Include="Scripts\vue.min.js" />
     <Content Include="Web.config" />
     <Content Include="Views\Admin\Index.cshtml" />
   </ItemGroup>

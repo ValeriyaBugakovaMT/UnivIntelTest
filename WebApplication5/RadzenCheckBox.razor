@@ -1,0 +1,113 @@
+﻿@using Radzen
+@implements IRadzenFormComponent
+@if(Visible) 
+{
+@if(Value == true) 
+{
+<div class="ui-chkbox ui-widget" onclick=@Toggle>
+    <div class="ui-helper-hidden-accessible">
+        <input type="checkbox" name="@Name" value="@Value">
+    </div>
+    <div class="ui-chkbox-box ui-widget ui-corner-all ui-state-default ui-state-active">
+        <span class="ui-chkbox-icon ui-clickable pi pi-check"></span>
+    </div>
+</div>
+}
+@if(Value == false) 
+{
+<div class="ui-chkbox ui-widget" onclick=@Toggle>
+    <div class="ui-helper-hidden-accessible">
+        <input type="checkbox" name="@Name" value="@Value">
+    </div>
+    <div class="ui-chkbox-box ui-widget ui-corner-all ui-state-default">
+        <span class="ui-chkbox-icon ui-clickable"></span>
+    </div>
+</div>
+}
+@if(TriState && Value == null) 
+{
+<div class="ui-chkbox ui-tristatechkbox ui-widget" onclick=@Toggle>
+    <div class="ui-helper-hidden-accessible">
+        <input type="text" name="@Name">
+    </div>
+    <div class="ui-chkbox-box ui-widget ui-corner-all ui-state-default ui-state-active">
+        <span class="ui-chkbox-icon pi ui-clickable pi-close"></span>
+    </div>
+</div>
+}
+}
+@functions {
+    [Parameter]
+    public string Name { get; set; }
+
+    [Parameter]
+    public string Style { get; set; }
+
+    [Parameter]
+    public bool TriState { get; set; } = false;
+
+    [Parameter]
+    public bool? Value { get; set; } = false;
+
+    public bool HasValue
+    {
+        get
+        {
+            return Value.HasValue;
+        }
+    }
+
+    dynamic _form;
+
+    [CascadingParameter]
+    public dynamic Form
+    {
+        get
+        {
+            return _form;
+        }
+        set
+        {
+            if (_form != value)
+            {
+                _form = value;
+                _form.AddComponent(this);
+            }
+        }
+    }
+
+    [Parameter]
+    public Action<bool?> Change { get; set; }
+
+    [Parameter]
+    public Action<object> ValueChange { get; set; }
+
+    [Parameter]
+    public bool Visible { get; set; } = true;
+
+    void Toggle()
+    {
+        if(Value == true)
+        {
+            if (TriState)
+            {
+                Value = null;
+            }
+            else
+            {
+                Value = false;
+            }
+        }
+        else if(Value == null)
+        {
+            Value = false;
+        }
+        else if(Value == false)
+        {
+            Value = true;
+        }
+
+        Change?.Invoke(Value);
+        ValueChange?.Invoke(Value);
+    }
+}

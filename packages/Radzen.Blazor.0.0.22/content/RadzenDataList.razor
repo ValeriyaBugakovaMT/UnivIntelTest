@@ -1,0 +1,237 @@
+﻿@using System.Linq.Expressions
+@typeparam TItem
+@if (Visible)
+{
+    <div class="ui-datalist-content ui-widget-content">
+        @if (Data != null)
+        {
+            @if (!WrapItems)
+            {
+                @foreach (var item in LoadData != null ? Data : View)
+                {
+                    <ul class="ui-datalist-data">
+                        <li>
+                            @if (Template != null)
+                            {
+                                @Template(item)
+                            }
+                            else
+                            {
+                                <span>Template</span>
+                            }
+                        </li>
+                    </ul>
+                }
+            }
+            else
+            {
+                    <div class="ui-g">
+                        @foreach (var item in LoadData != null ? Data : View)
+                        {
+                            @if (Template != null)
+                            {
+                                @Template(item)
+                            }
+                            else
+                            {
+                                <span>Template</span>
+                            }
+                        }
+                    </div>
+            }
+        }
+
+        @if (AllowPaging && Count > PageSize)
+        {
+            <div class="ui-paginator-bottom ui-paginator ui-widget ui-widget-header ui-unselectable-text ui-helper-clearfix">
+                @if (skip > 0)
+                {
+                    <a class="ui-paginator-first ui-paginator-element ui-state-default ui-corner-all" href="javascript:void(0)" tabindex="-1" onclick="@(() => FirstPage())">
+                        <span class="ui-paginator-icon pi pi-step-backward"></span>
+                    </a>
+                    <a class="ui-paginator-prev ui-paginator-element ui-state-default ui-corner-all" href="javascript:void(0)" tabindex="-1" onclick="@(() => PrevPage())">
+                        <span class="ui-paginator-icon pi pi-caret-left"></span>
+                    </a>
+                }
+                else
+                {
+                    <a class="ui-paginator-first ui-paginator-element ui-state-default ui-corner-all ui-state-disabled" href="javascript:void(0)" tabindex="-1" onclick="@(() => FirstPage())">
+                        <span class="ui-paginator-icon pi pi-step-backward"></span>
+                    </a>
+                    <a class="ui-paginator-prev ui-paginator-element ui-state-default ui-corner-all ui-state-disabled" href="javascript:void(0)" tabindex="-1" onclick="@(() => PrevPage())">
+                        <span class="ui-paginator-icon pi pi-caret-left"></span>
+                    </a>
+                }
+                <span class="ui-paginator-pages">
+                    @foreach (var i in Enumerable.Range(startPage, Math.Min(endPage + 1, numberOfPageLinks)))
+                    {
+                        @if (i == GetPage())
+                        {
+                            <a class="ui-paginator-page ui-paginator-element ui-state-default ui-corner-all ui-state-active" href="javascript:void(0)" onclick="@(() => GoToPage(i))">@(i + 1)</a>
+                        }
+                        else
+                        {
+                            <a class="ui-paginator-page ui-paginator-element ui-state-default ui-corner-all" href="javascript:void(0)" onclick="@(() => GoToPage(i))">@(i + 1)</a>
+                        }
+                    }
+                </span>
+                <a class="ui-paginator-next ui-paginator-element ui-state-default ui-corner-all" href="javascript:void(0)" tabindex="0" onclick="@(() => NextPage())">
+                    <span class="ui-paginator-icon pi pi-caret-right"></span>
+                </a>
+                <a class="ui-paginator-last ui-paginator-element ui-state-default ui-corner-all" href="javascript:void(0)" tabindex="0" onclick="@(() => LastPage())">
+                    <span class="ui-paginator-icon pi pi-step-forward"></span>
+                </a>
+            </div>
+        }
+        </div>
+    }
+@functions {
+[Parameter]
+public bool AllowPaging { get; set; }
+
+[Parameter]
+public bool Visible { get; set; } = true;
+
+[Parameter]
+public int PageSize { get; set; } = 10;
+
+[Parameter]
+public int Count { get; set; }
+
+[Parameter]
+public bool WrapItems { get; set; }
+
+[Parameter]
+public RenderFragment<TItem> Template { get; set; }
+
+IEnumerable<TItem> _data;
+
+[Parameter]
+protected IEnumerable<TItem> Data
+{
+    get
+    {
+        return _data;
+    }
+    set
+    {
+        if (_data != value)
+        {
+            _data = value;
+            StateHasChanged();
+        }
+    }
+}
+
+IEnumerable<TItem> View
+{
+    get
+    {
+        var query = Data != null ? Data.AsQueryable() : Enumerable.Empty<TItem>().AsQueryable();
+
+        return AllowPaging ? query.Skip(skip).Take(PageSize) : query;
+    }
+}
+
+[Parameter]
+public Action<Radzen.LoadDataArgs> LoadData { get; set; }
+
+[Parameter]
+public Action<TItem> RowSelect { get; set; }
+
+public async void Reload()
+{
+    await Task.Run(() => LoadData?.Invoke(new Radzen.LoadDataArgs() { Skip = skip, Top = PageSize }));
+
+    if (LoadData == null)
+    {
+        await Invoke(() => { StateHasChanged(); });
+    }
+}
+
+protected override async Task OnInitAsync()
+{
+    await Task.Run(() => Reload());
+}
+
+protected override Task OnParametersSetAsync()
+{
+    if (Data != null && LoadData == null)
+    {
+        Count = Data.Count();
+        StateHasChanged();
+    }
+
+    if (Count > 0 && PageSize > 0)
+    {
+        numberOfPages = (int)Math.Ceiling((decimal)Count / PageSize);
+        if (numberOfPages < 1)
+        {
+            numberOfPages = 1;
+        }
+
+        CalculatePager();
+        StateHasChanged();
+    }
+
+    return base.OnParametersSetAsync();
+}
+
+int skip;
+int numberOfPageLinks = 5;
+int startPage;
+int endPage;
+int numberOfPages;
+
+void CalculatePager()
+{
+    int visiblePages = Math.Min(numberOfPageLinks, numberOfPages);
+
+    startPage = (int)Math.Max(0, Math.Ceiling((decimal)(GetPage() - (visiblePages / 2))));
+    endPage = Math.Min(numberOfPages - 1, startPage + visiblePages - 1);
+
+    var delta = numberOfPageLinks - (endPage - startPage + 1);
+    startPage = Math.Max(0, startPage - delta);
+}
+
+int GetPage()
+{
+    return (int)Math.Floor((decimal)(skip / PageSize));
+}
+
+public void GoToPage(int page)
+{
+    skip = page * PageSize;
+    CalculatePager();
+    Reload();
+}
+
+public void FirstPage()
+{
+    skip = 0;
+    CalculatePager();
+    Reload();
+}
+
+public void PrevPage()
+{
+    skip = skip - PageSize < 0 ? 0 : skip - PageSize;
+    CalculatePager();
+    Reload();
+}
+
+public void NextPage()
+{
+    int page = GetPage();
+    skip = PageSize * (page < (numberOfPages - 1) ? page + 1 : numberOfPages - 1);
+    CalculatePager();
+    Reload();
+}
+
+public void LastPage()
+{
+    skip = PageSize * (numberOfPages - 1);
+    CalculatePager();
+    Reload();
+}
+}

@@ -1,0 +1,22 @@
+﻿@if(Visible) 
+{
+<img src="@Path" style="@Style" onclick="@((args) => OnClick(args))" />
+}
+@functions {
+    [Parameter]
+    public string Path { get; set; }
+
+    [Parameter]
+    public string Style { get; set; }
+
+    [Parameter]
+    public Action<UIMouseEventArgs> Click { get; set; }
+
+    [Parameter]
+    public bool Visible { get; set; } = true;
+
+    protected void OnClick(UIMouseEventArgs args)
+    {
+        Click?.Invoke(args);
+    }
+}

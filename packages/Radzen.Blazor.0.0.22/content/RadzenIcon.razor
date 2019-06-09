@@ -1,0 +1,14 @@
+﻿@if(Visible) 
+{
+<i class="material-icons d-inline-flex justify-content-center align-items-center" style="@Style">@Icon</i>
+}
+@functions {
+    [Parameter]
+    public string Style { get; set; }
+
+    [Parameter]
+    public string Icon { get; set; }
+
+    [Parameter]
+    public bool Visible { get; set; } = true;
+}

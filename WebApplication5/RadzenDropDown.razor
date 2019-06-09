@@ -1,0 +1,146 @@
+﻿@using Radzen
+@implements IRadzenFormComponent
+@if (Visible)
+{
+    @if (Disabled)
+    {
+        <select style="@Style" class="dropdown ui-dropdown ui-widget ui-state-default ui-corner-all ui-helper-clearfix" onchange="@OnChange">
+            @if (Data != null)
+            {
+                @if (Placeholder != null)
+                {
+                    <option value=null class="ui-dropdown-item ui-corner-all">@Placeholder</option>
+                }
+
+                @foreach (var item in Data)
+                {
+                    @if (GetValue(item) == (Value != null ? Value.ToString() : ""))
+                    {
+                        <option value="@GetValue(item)" selected="selected" class="ui-dropdown-item ui-corner-all">@GetText(item)</option>
+                    }
+                    else
+                    {
+                        <option value="@GetValue(item)" class="ui-dropdown-item ui-corner-all">@GetText(item)</option>
+                    }
+                }
+            }
+        </select>
+    }
+    else
+    {
+        <select style="@Style" class="dropdown ui-dropdown ui-widget ui-state-default ui-corner-all ui-helper-clearfix" onchange="@OnChange">
+            @if (Data != null)
+            {
+                @if (Placeholder != null)
+                {
+                    <option value=null class="ui-dropdown-item ui-corner-all">@Placeholder</option>
+                }
+
+                @foreach (var item in Data)
+                {
+                    @if (GetValue(item) == (Value != null ? Value.ToString() : ""))
+                    {
+                        <option value="@GetValue(item)" selected="selected" class="ui-dropdown-item ui-corner-all">@GetText(item)</option>
+                    }
+                    else
+                    {
+                        <option value="@GetValue(item)" class="ui-dropdown-item ui-corner-all">@GetText(item)</option>
+                    }
+                }
+            }
+        </select>
+    }
+}
+@functions {
+    [Parameter]
+    public string Name { get; set; }
+
+    [Parameter]
+    public string TextProperty { get; set; }
+
+    [Parameter]
+    public string ValueProperty { get; set; }
+
+    [Parameter]
+    public IEnumerable<object> Data { get; set; }
+
+    object _value;
+
+    [Parameter]
+    public object Value
+    {
+        get
+        {
+            return _value;
+        }
+        set
+        {
+            if (_value != value)
+            {
+                _value = object.Equals(value, "null") ? null : value;
+                Change?.Invoke(_value);
+                ValueChange?.Invoke(Value);
+            }
+        }
+    }
+
+    public bool HasValue
+    {
+        get
+        {
+            return Value != null;
+        }
+    }
+
+    dynamic _form;
+
+    [CascadingParameter]
+    public dynamic Form
+    {
+        get
+        {
+            return _form;
+        }
+        set
+        {
+            if (_form != value)
+            {
+                _form = value;
+                _form.AddComponent(this);
+            }
+        }
+    }
+
+    protected void OnChange(UIChangeEventArgs args)
+    {
+        Value = args.Value;
+    }
+
+    [Parameter]
+    public bool Disabled { get; set; }
+
+    [Parameter]
+    public string Style { get; set; }
+
+    [Parameter]
+    public bool Visible { get; set; } = true;
+
+    [Parameter]
+    public string Placeholder { get; set; }
+
+    [Parameter]
+    public Action<object> Change { get; set; }
+
+    [Parameter]
+    public Action<object> ValueChange { get; set; }
+
+    private string GetValue(object item)
+    {
+        return $"{item.GetType().GetProperty(ValueProperty).GetValue(item)}";
+    }
+
+    private string GetText(object item)
+    {
+        return $"{item.GetType().GetProperty(TextProperty).GetValue(item)}";
+    }
+}

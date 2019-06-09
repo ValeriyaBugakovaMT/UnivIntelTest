@@ -1,0 +1,149 @@
+﻿@using Radzen
+@implements IRadzenFormComponent
+@if (Visible)
+{
+    @if (ReadOnly)
+    {
+        @if (Disabled)
+        {
+            <input type="@Type" name="@Name" disabled="disabled" readonly="readonly" style="@Style" class="textbox ng-untouched ng-pristine ng-valid"
+                   placeholder="@Placeholder" value="@FormattedValue" onchange="@OnChange" />
+        }
+        else
+        {
+            <input type="@Type" name="@Name" readonly="readonly" style="@Style" class="textbox ng-untouched ng-pristine ng-valid"
+                   placeholder="@Placeholder" value="@FormattedValue" onchange="@OnChange" />
+        }
+    }
+    else
+    {
+        @if (Disabled)
+        {
+            <input type="@Type" name="@Name" disabled="disabled" style="@Style" class="textbox ng-untouched ng-pristine ng-valid"
+                   placeholder="@Placeholder" value="@FormattedValue" onchange="@OnChange" />
+        }
+        else
+        {
+            <input type="@Type" name="@Name" style="@Style" class="textbox ng-untouched ng-pristine ng-valid"
+                   placeholder="@Placeholder" value="@FormattedValue" onchange="@OnChange" />
+        }
+    }
+}
+@functions {
+    [Parameter]
+    public string Name { get; set; }
+
+    DateTime? _value;
+
+    [Parameter]
+    public DateTime? Value
+    {
+        get
+        {
+            return _value;
+        }
+        set
+        {
+            if (_value != value)
+            {
+                _value = value;
+                Change?.Invoke(_value);
+                ValueChange?.Invoke(Value);
+            }
+        }
+    }
+
+    public bool HasValue
+    {
+        get
+        {
+            return Value.HasValue;
+        }
+    }
+
+    public string FormattedValue
+    {
+        get
+        {
+            return string.Format("{0:" + DateFormat + "}", Value);
+        }
+    }
+    
+    dynamic _form;
+
+    [CascadingParameter]
+    public dynamic Form
+    {
+        get
+        {
+            return _form;
+        }
+        set
+        {
+            if (_form != value)
+            {
+                _form = value;
+                _form.AddComponent(this);
+            }
+        }
+    }
+
+    public string Type
+    {
+        get
+        {
+            return ShowTime ? "datetime-local" : "date";
+        }
+    }
+
+    protected void OnChange(UIChangeEventArgs args)
+    {
+        if (string.IsNullOrEmpty(args.Value.ToString()))
+        {
+            Value = null;
+        }
+        else
+        {
+            Value = DateTime.Parse(args.Value.ToString());
+        }
+    }
+
+    [Parameter]
+    public bool ReadOnly { get; set; }
+
+    [Parameter]
+    public bool Disabled { get; set; }
+
+    [Parameter]
+    public bool ShowTime { get; set; }
+
+    [Parameter]
+    public bool ShowSeconds { get; set; }
+
+    [Parameter]
+    public string Style { get; set; }
+
+    [Parameter]
+    public string DateFormat { get; set; } = "yyyy-MM-dd";
+
+    [Parameter]
+    public string YearRange { get; set; } = "1950:2050";
+
+    [Parameter]
+    public string SelectionMode { get; set; } = "single";
+
+    [Parameter]
+    public bool Visible { get; set; } = true;
+
+    [Parameter]
+    public bool Utc { get; set; } = true;
+
+    [Parameter]
+    public string Placeholder { get; set; }
+
+    [Parameter]
+    public Action<DateTime?> Change { get; set; }
+
+    [Parameter]
+    public Action<object> ValueChange { get; set; }
+}

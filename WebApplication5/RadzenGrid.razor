@@ -1,0 +1,797 @@
+﻿@using System.Linq.Expressions
+@using System.Linq.Dynamic.Core
+@typeparam TItem
+@if (Columns != null)
+{
+    <CascadingValue Value=this>
+        @Columns
+    </CascadingValue>
+}
+@if (Visible)
+{
+    <div class="ui-has-paginator ui-datatable ui-widget ui-datatable-reflow ui-datatable-scrollable">
+        <div class="ui-datatable-scrollable-wrapper ui-helper-clearfix" style="">
+            <div class="ui-datatable-scrollable-view" ng-reflect-klass="ui-datatable-scrollable-view">
+
+                <div class="ui-widget-header ui-datatable-scrollable-header">
+                    <div class="ui-datatable-scrollable-header-box" style="margin-right: 0px;">
+                        <table>
+                            <colgroup class="ui-datatable-scrollable-colgroup">
+                                @if (Template != null)
+                                {
+                                    <col>
+                                }
+                                @foreach (var column in columns)
+                                {
+                                    <col style="@column.GetStyle()">
+                                }
+                            </colgroup>
+                            <thead class="ui-datatable-thead">
+                                <tr class="ui-state-default">
+                                    @if (Template != null)
+                                    {
+                                        <th class="col-icon ui-state-default ui-unselectable-text" scope="col">
+                                            <span class="ui-column-title"></span>
+                                        </th>
+                                    }
+                                    @foreach (var column in columns)
+                                            {
+                                                var sortableClass = column.Sortable ? "ui-sortable-column" : "";
+                                        <th class="@($"ui-state-default ui-unselectable-text {sortableClass}")" tabindex="1" scope="col">
+                                            <div onclick='@((args) => OnSort(args, column))' style="width:100%">
+                                                <span class="ui-column-title">@column.Title</span>
+                                                @if (!string.IsNullOrEmpty(orderBy) && orderBy.Contains($"{column.GetSortProperty()} asc"))
+                                                {
+                                                    <span class="ui-sortable-column-icon fa fa-fw fa-sort fa-sort-asc"></span>
+                                                }
+                                                else if (!string.IsNullOrEmpty(orderBy) && orderBy.Contains($"{column.GetSortProperty()} desc"))
+                                                {
+                                                    <span class="ui-sortable-column-icon fa fa-fw fa-sort fa-sort-desc"></span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="ui-sortable-column-icon fa fa-fw fa-sort"></span>
+                                                }
+                                            </div>
+                                            @if (AllowFiltering && column.Filterable && !string.IsNullOrEmpty(column.GetFilterProperty()))
+                                            {
+                                                <div class="ui-cell-filter">
+                                                    <div class="ui-cell-filter-content">
+                                                        <label>
+                                                            @if (column.Type == "string" && column.Format == "date-time")
+                                                            {
+                                                                <i onclick="@((args) => ToggleDateFilter(args, column))" class="material-icons">date_range</i>
+                                                                @if (column.FilterValue != null)
+                                                                {
+                                                                    <span class="ui-current-filter">@column.FilterValue</span>
+                                                                    <i onclick="@((args) => ClearDateFilter(column))" class="material-icons ui-cell-filter-clear">close</i>
+                                                                }
+                                                                <div class="ng-tns-c5-6 ui-overlaypanel ui-widget ui-widget-content ui-corner-all ui-shadow ng-trigger ng-trigger-panelState"
+                                                                     style="@ColumnDateFilterStyle(column)">
+                                                                    <div class="ui-overlaypanel-content">
+
+                                                                        <div class="ui-date-filter">
+
+                                                                            <div class="ui-listbox ui-inputtext ui-widget ui-widget-content ui-corner-all">
+                                                                                <div class="ui-listbox-list-wrapper">
+                                                                                    <ul class="ui-listbox-list">
+                                                                                        <li class="@(DateFilterOperatorStyle(column, "eq"))" onclick="@((args) => ApplyDateFilterByFilterOperator(column, "eq"))" style="display: block;">
+                                                                                            <span>Equals</span>
+                                                                                        </li>
+                                                                                        <li class="@(DateFilterOperatorStyle(column, "ne"))" onclick="@((args) => ApplyDateFilterByFilterOperator(column, "ne"))" style="display: block;">
+                                                                                            <span>Not equals</span>
+                                                                                        </li>
+                                                                                        <li class="@(DateFilterOperatorStyle(column, "lt"))" onclick="@((args) => ApplyDateFilterByFilterOperator(column, "lt"))" style="display: block;">
+                                                                                            <span>Less than</span>
+                                                                                        </li>
+                                                                                        <li class="@(DateFilterOperatorStyle(column, "le"))" onclick="@((args) => ApplyDateFilterByFilterOperator(column, "le"))" style="display: block;">
+                                                                                            <span>Less than or equals</span>
+                                                                                        </li>
+                                                                                        <li class="@(DateFilterOperatorStyle(column, "gt"))" onclick="@((args) => ApplyDateFilterByFilterOperator(column, "gt"))" style="display: block;">
+                                                                                            <span>Greater than</span>
+                                                                                        </li>
+                                                                                        <li class="@(DateFilterOperatorStyle(column, "ge"))" onclick="@((args) => ApplyDateFilterByFilterOperator(column, "ge"))" style="display: block;">
+                                                                                            <span>Greater than or equals</span>
+                                                                                        </li>
+                                                                                    </ul>
+                                                                                </div>
+                                                                            </div>
+
+                                                                            <input onchange="@((args) => column.FilterValue = args.Value)" value="@column.FilterValue"
+                                                                                   type="date" style="width:280px; margin-top:-160px;"
+                                                                                   class="ng-untouched ng-pristine ng-valid" />
+
+                                                                        </div>
+                                                                        <div class="ui-date-filter-buttons">
+                                                                            <button class="ui-button ui-clear-filter" onclick="@((args) => ClearDateFilter(column))">
+                                                                                Clear
+                                                                            </button>
+                                                                            <button class="ui-button ui-apply-filter" onclick="@((args) => ApplyDateFilter(column))">
+                                                                                Apply
+                                                                            </button>
+                                                                        </div>
+
+                                                                    </div>
+                                                                </div>
+                                                            }
+                                                            else if (column.Type == "number")
+                                                            {
+                                                                <i class="material-icons">search</i>
+                                                                <input onchange="@((args) => OnFilter(args, column))" value="@column.FilterValue" type="number"
+                                                                       step="any" class="ng-untouched ng-pristine ng-valid" />
+                                                            }
+                                                            else
+                                                            {
+                                                                <i class="material-icons">search</i>
+                                                                <input onchange="@((args) => OnFilter(args, column))" value="@column.FilterValue" type="text"
+                                                                       class="ng-untouched ng-pristine ng-valid" />
+                                                            }
+                                                        </label>
+                                                    </div>
+                                                </div>
+                                            }
+                                        </th>
+                                    }
+                                </tr>
+                            </thead>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="ui-datatable-scrollable-body">
+                    <div class="ui-datatable-scrollable-table-wrapper" style="position:relative">
+                        <table style="top:0px">
+                            <colgroup class="ui-datatable-scrollable-colgroup">
+                                @if (Template != null)
+                                {
+                                    <col>
+                                }
+                                @foreach (var column in columns)
+                                {
+                                    <col style="@column.GetStyle()">
+                                }
+                            </colgroup>
+                            <tbody class="ui-datatable-data ui-widget-content ui-datatable-hoverable-rows">
+                                @if (Data != null)
+                                {
+                                    @if (Count > 0)
+                                    {
+                                        int i = 0;
+                                        @foreach (var item in LoadData != null ? Data : PagedView)
+                                        {
+                                            <tr class="@(RowStyle(item, i))">
+                                                @if (Template != null)
+                                                {
+                                                    <td class="col-icon" ng-reflect-klass="col-icon">
+                                                        <span class="ui-column-title"></span>
+                                                        <a href="javascript:void(0)" onclick="@(_ => ExpandItem(item))">
+                                                            <span class="@(ExpandedItemStyle(item))"></span>
+                                                        </a>
+                                                    </td>
+                                                }
+                                                @foreach (var column in columns)
+                                                {
+                                                    if (column.Bubble)
+                                                    {
+                                                        <td onclick="@(() => OnRowSelect(item))" ondblclick="@(() => OnRowDblClick(item))">
+                                                            <span class="ui-cell-data">
+                                                                @if (item != null)
+                                                                {
+                                                                    @if (column.Template != null)
+                                                                    {
+                                                                        @column.Template(item)
+                                                                    }
+                                                                    else if (!string.IsNullOrEmpty(column.Property))
+                                                                    {
+                                                                        @if (!string.IsNullOrEmpty(column.FormatString))
+                                                                        {
+                                                                            @(String.Format(column.FormatString, PropertyAccess.GetValue<TItem>(item, column.Property)));
+                                                                        }
+                                                                        else if (!string.IsNullOrEmpty(column.Property))
+                                                                        {
+                                                                            @(PropertyAccess.GetValue<TItem>(item, column.Property));
+                                                                        }
+                                                                    }
+                                                                }
+                                                            </span>
+                                                        </td>
+                                                    }
+                                                    else
+                                                    {
+                                                        <td>
+                                                            <span class="ui-cell-data">
+                                                                @if (item != null)
+                                                                {
+                                                                    @if (column.Template != null)
+                                                                    {
+                                                                        @column.Template(item)
+                                                                    }
+                                                                    else if (!string.IsNullOrEmpty(column.Property))
+                                                                    {
+                                                                        @if (!string.IsNullOrEmpty(column.FormatString))
+                                                                        {
+                                                                            @(String.Format(column.FormatString, PropertyAccess.GetValue<TItem>(item, column.Property)));
+                                                                        }
+                                                                        else if (!string.IsNullOrEmpty(column.Property))
+                                                                        {
+                                                                            @(PropertyAccess.GetValue<TItem>(item, column.Property));
+                                                                        }
+                                                                    }
+                                                                }
+                                                            </span>
+                                                        </td>
+                                                    }
+                                                }
+                                                 
+                                            </tr>
+                                            @if (Template != null && expandedItems.Keys.Contains(item.GetHashCode()))
+                                            {
+                                            <tr class="ui-expanded-row-content">
+                                                <td colspan="@(columns.Count + 1)">
+                                                    <div class="ui-expanded-row-template">
+                                                        @Template(item)
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                            }
+                                            i++;
+                                        }
+                                    }
+                                    else
+                                    {
+                                        <tr class="ui-widget-content ui-datatable-emptymessage-row">
+                                            <td class="ui-datatable-emptymessage" colspan="@columns.Count">
+                                                <span>@EmptyText</span>
+                                            </td>
+                                        </tr>
+                                    }
+                                }
+                                </tbody>
+                            </table>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        @if (AllowPaging && Count > PageSize)
+        {
+            <div class="ui-paginator-bottom ui-paginator ui-widget ui-widget-header ui-unselectable-text ui-helper-clearfix">
+                @if (skip > 0)
+                {
+                    <a class="ui-paginator-first ui-paginator-element ui-state-default ui-corner-all" href="javascript:void(0)" tabindex="-1" onclick="@(() => FirstPage())">
+                        <span class="ui-paginator-icon pi pi-step-backward"></span>
+                    </a>
+                    <a class="ui-paginator-prev ui-paginator-element ui-state-default ui-corner-all" href="javascript:void(0)" tabindex="-1" onclick="@(() => PrevPage())">
+                        <span class="ui-paginator-icon pi pi-caret-left"></span>
+                    </a>
+                }
+                else
+                {
+                    <a class="ui-paginator-first ui-paginator-element ui-state-default ui-corner-all ui-state-disabled" href="javascript:void(0)" tabindex="-1" onclick="@(() => FirstPage())">
+                        <span class="ui-paginator-icon pi pi-step-backward"></span>
+                    </a>
+                    <a class="ui-paginator-prev ui-paginator-element ui-state-default ui-corner-all ui-state-disabled" href="javascript:void(0)" tabindex="-1" onclick="@(() => PrevPage())">
+                        <span class="ui-paginator-icon pi pi-caret-left"></span>
+                    </a>
+                }
+                <span class="ui-paginator-pages">
+                    @foreach (var i in Enumerable.Range(startPage, Math.Min(endPage + 1, numberOfPageLinks)))
+                    {
+                        @if (i == GetPage())
+                        {
+                            <a class="ui-paginator-page ui-paginator-element ui-state-default ui-corner-all ui-state-active" href="javascript:void(0)" onclick="@(() => GoToPage(i))">@(i + 1)</a>
+                        }
+                        else
+                        {
+                            <a class="ui-paginator-page ui-paginator-element ui-state-default ui-corner-all" href="javascript:void(0)" onclick="@(() => GoToPage(i))">@(i + 1)</a>
+                        }
+                    }
+                </span>
+                <a class="ui-paginator-next ui-paginator-element ui-state-default ui-corner-all" href="javascript:void(0)" tabindex="0" onclick="@(() => NextPage())">
+                    <span class="ui-paginator-icon pi pi-caret-right"></span>
+                </a>
+                <a class="ui-paginator-last ui-paginator-element ui-state-default ui-corner-all" href="javascript:void(0)" tabindex="0" onclick="@(() => LastPage())">
+                    <span class="ui-paginator-icon pi pi-step-forward"></span>
+                </a>
+            </div>
+        }
+    </div>
+}
+@functions {
+    [Parameter]
+    public RenderFragment<TItem> Template { get; set; }
+
+    [Parameter]
+    public string EmptyText { get; set; } = "No records to display.";
+
+    [Parameter]
+    public bool AllowPaging { get; set; }
+
+    [Parameter]
+    public bool AllowSorting { get; set; }
+
+    [Parameter]
+    public bool AllowFiltering { get; set; }
+
+    [Parameter]
+    public bool Visible { get; set; } = true;
+
+    [Parameter]
+    public int PageSize { get; set; } = 10;
+
+    [Parameter]
+    public int Count { get; set; }
+
+    IEnumerable<TItem> _data;
+
+    [Parameter]
+    protected IEnumerable<TItem> Data
+    {
+        get
+        {
+            return _data;
+        }
+        set
+        {
+            if (_data != value)
+            {
+                _data = value;
+                StateHasChanged();
+            }
+        }
+    }
+
+    IEnumerable<TItem> View
+    {
+        get
+        {
+            var query = Data != null ? Data.AsQueryable() : Enumerable.Empty<TItem>().AsQueryable();
+
+            if (!string.IsNullOrEmpty(where))
+            {
+                query = query.AsQueryable().Where(where);
+            }
+
+            if (!string.IsNullOrEmpty(orderBy))
+            {
+                query = query.AsQueryable().OrderBy(orderBy);
+            }
+
+            return query;
+        }
+    }
+
+    IEnumerable<TItem> PagedView
+    {
+        get
+        {
+            return AllowPaging ? View.Skip(skip).Take(PageSize) : View;
+        }
+    }
+
+    [Parameter]
+    public Action<Radzen.LoadDataArgs> LoadData { get; set; }
+
+    [Parameter]
+    public Action<TItem> RowSelect { get; set; }
+
+    [Parameter]
+    public Action<TItem> RowDoubleClick { get; set; }
+
+    [Parameter]
+    public Action<TItem> RowExpand { get; set; }
+
+    [Parameter]
+    public Action<TItem> RowCollapse { get; set; }
+
+    [Parameter]
+    public RenderFragment Columns { get; set; }
+
+    public async void Reload()
+    {
+        await Task.Run(() => LoadData?.Invoke(new Radzen.LoadDataArgs() { Skip = skip, Top = PageSize, OrderBy = orderBy, Filter = oDataWhere }));
+
+        if (LoadData == null)
+        {
+            await Invoke(() => { StateHasChanged(); });
+        }
+    }
+
+    Dictionary<int, bool> expandedItems = new Dictionary<int, bool>();
+    protected string ExpandedItemStyle(TItem item)
+    {
+        return expandedItems.Keys.Contains(item.GetHashCode()) ? "ui-row-toggler fa fa-fw ui-clickable fa-chevron-circle-down" : "ui-row-toggler fa fa-fw ui-clickable fa-chevron-circle-right";
+    }
+
+    Dictionary<int, bool> selectedItems = new Dictionary<int, bool>();
+    protected string RowStyle(TItem item, int index)
+    {
+        var evenOrOdd = index % 2 == 0 ? "ui-datatable-even" : "ui-datatable-odd";
+
+        return selectedItems.Keys.Contains(item.GetHashCode()) ? $"ui-state-highlight {evenOrOdd} ui-widget-content" : $"{evenOrOdd} ui-widget-content";
+    }
+
+    protected void ExpandItem(TItem item)
+    {
+        int hash = item.GetHashCode();
+        if (!expandedItems.Keys.Contains(hash))
+        {
+            expandedItems.Add(hash, true);
+            RowExpand?.Invoke(item);
+        }
+        else
+        {
+            expandedItems.Remove(hash);
+            RowCollapse?.Invoke(item);
+        }
+        StateHasChanged();
+    }
+
+    protected string DateFilterOperatorStyle(RadzenGridColumn<TItem> column, string value)
+    {
+        return column.FilterOperator == value ?
+            "ui-listbox-item ui-corner-all ui-state-highlight" :
+            "ui-listbox-item ui-corner-all";
+    }
+
+    protected string ColumnDateFilterStyle(RadzenGridColumn<TItem> column)
+    {
+        return column.FilterVisible ? DateFilterStyle : "display: none;";
+    }
+
+    string DateFilterStyle = "display: none;";
+    protected void ToggleDateFilter(UIMouseEventArgs args, RadzenGridColumn<TItem> column)
+    {
+        column.FilterVisible = !column.FilterVisible;
+        string DateFilterVisibleString = column.FilterVisible ? "block" : "none";
+        DateFilterStyle = $"position: absolute; display: {DateFilterVisibleString}; top:{args.ClientY - 165}px; left:{args.ClientX - 275}px; z-index: 1005; opacity: 1;";
+        StateHasChanged();
+    }
+
+    protected void ClearDateFilter(RadzenGridColumn<TItem> column)
+    {
+        column.FilterVisible = false;
+        DateFilterStyle = $"display: none;";
+        StateHasChanged();
+
+        string property = column.GetFilterProperty();
+        if (AllowFiltering && column.Filterable && !string.IsNullOrEmpty(property))
+        {
+            column.FilterOperator = "eq";
+            column.FilterValue = null;
+            whereFilters[property] = null;
+            oDataWhereFilters[property] = null;
+
+            skip = 0;
+            where = string.Join(" and ", whereFilters.Values.Where(i => !string.IsNullOrEmpty(i)));
+            oDataWhere = string.Join(" and ", oDataWhereFilters.Values.Where(i => !string.IsNullOrEmpty(i))).Replace(" ", "%20");
+
+            if (Data != null && LoadData == null)
+            {
+                Count = View.Count();
+                StateHasChanged();
+            }
+
+            Reload();
+        }
+    }
+
+    protected void ApplyDateFilter(RadzenGridColumn<TItem> column)
+    {
+        column.FilterVisible = false;
+        DateFilterStyle = $"display: none;";
+        OnFilter(new UIChangeEventArgs() { Value = column.FilterValue }, column);
+    }
+
+    protected void ApplyDateFilterByFilterOperator(RadzenGridColumn<TItem> column, string filterOperator)
+    {
+        column.FilterOperator = filterOperator;
+    }
+
+    protected void OnRowSelect(TItem item)
+    {
+        int hash = item.GetHashCode();
+
+
+        if (true) //single selection for now
+        {
+            selectedItems.Clear();
+            selectedItems.Add(hash, true);
+        }
+        else
+        {
+            //if (!selectedItems.Keys.Contains(hash))
+            //{
+            //    selectedItems.Add(hash, true);
+            //}
+            //else
+            //{
+            //    selectedItems.Remove(hash);
+            //}
+        }
+
+        StateHasChanged();
+
+        RowSelect?.Invoke(item);
+    }
+
+    protected void OnRowDblClick(TItem item)
+    {
+        RowDoubleClick?.Invoke(item);
+    }
+
+    protected void OnSort(UIMouseEventArgs args, RadzenGridColumn<TItem> column)
+    {
+        string property = column.GetSortProperty();
+        if (AllowSorting && column.Sortable && !string.IsNullOrEmpty(property))
+        {
+            OrderBy(property);
+        }
+    }
+
+    protected void OnFilter(UIChangeEventArgs args, RadzenGridColumn<TItem> column)
+    {
+        string property = column.GetFilterProperty();
+        if (AllowFiltering && column.Filterable && !string.IsNullOrEmpty(property))
+        {
+            column.FilterValue = args.Value;
+
+            var stringValue = (string)Convert.ChangeType(column.FilterValue, typeof(string));
+
+            whereFilters[property] = FilterToString(PropertyAccess.GetProperty(property), stringValue, column);
+            oDataWhereFilters[property] = FilterToODataString(property, stringValue, column);
+
+            skip = 0;
+            where = string.Join(" and ", whereFilters.Values.Where(i => !string.IsNullOrEmpty(i)));
+            oDataWhere = string.Join(" and ", oDataWhereFilters.Values.Where(i => !string.IsNullOrEmpty(i))).Replace(" ", "%20");
+
+            if (Data != null && LoadData == null)
+            {
+                Count = View.Count();
+                StateHasChanged();
+            }
+
+            Reload();
+        }
+    }
+
+    private string oDataOperatorToLinqOperator(string oDataOperator)
+    {
+        if (oDataOperator == "eq")
+        {
+            return "==";
+        }
+        else if (oDataOperator == "ne")
+        {
+            return "!=";
+        }
+        else if (oDataOperator == "lt")
+        {
+            return "<";
+        }
+        else if (oDataOperator == "gt")
+        {
+            return ">";
+        }
+        else if (oDataOperator == "ge")
+        {
+            return ">=";
+        }
+        else if (oDataOperator == "le")
+        {
+            return "<=";
+        }
+
+        return null;
+    }
+
+    private string FilterToString(string property, string value, RadzenGridColumn<TItem> column)
+    {
+        if (!string.IsNullOrEmpty(column.Type) && !string.IsNullOrEmpty(value))
+        {
+            var linqOperator = oDataOperatorToLinqOperator(column.FilterOperator);
+
+            if (column.Type == "string")
+            {
+                if (column.Format == "date-time" || column.Format == "date")
+                {
+                    return $@"{property} {linqOperator} Convert.ToDateTime(""{DateTime.Parse(value, null, System.Globalization.DateTimeStyles.RoundtripKind).ToString("yyyy-MM-ddTHH:mm:ssZ")}"")";
+                }
+                else if (column.Format == "time")
+                {
+                    return $"{property} {linqOperator} duration'{value}'";
+                }
+                else if (column.Format == "uuid")
+                {
+                    return $"{property} {linqOperator} {value}";
+                }
+                else if (!string.IsNullOrEmpty(value) && column.FilterOperator == "contains")
+                {
+                    return $@"({property} == null ? """" : {property}).Contains(""{value}"")";
+                }
+                else if (!string.IsNullOrEmpty(value) && column.FilterOperator == "startswith")
+                {
+                    return $@"({property} == null ? """" : {property}).StartsWith(""{value}"")";
+                }
+                else if (!string.IsNullOrEmpty(value) && column.FilterOperator == "endswith")
+                {
+                    return $@"({property} == null ? """" : {property}).EndsWith(""{value}"")";
+                }
+                else if (!string.IsNullOrEmpty(value) && column.FilterOperator == "eq")
+                {
+                    return $"{property} == {value}";
+                }
+            }
+            else if (column.Type == "number" || column.Type == "integer")
+            {
+                return $"{property} {linqOperator} {value}";
+            }
+            else if (column.Type == "boolean")
+            {
+                return $"{property} == {value}";
+            }
+        }
+
+        return "";
+    }
+
+    private string FilterToODataString(string property, string value, RadzenGridColumn<TItem> column)
+    {
+        if (!string.IsNullOrEmpty(column.Type) && !string.IsNullOrEmpty(value))
+        {
+            if (column.Type == "string")
+            {
+                if (column.Format == "date-time" || column.Format == "date")
+                {
+                    return $"{property} {column.FilterOperator} {DateTime.Parse(value, null, System.Globalization.DateTimeStyles.RoundtripKind).ToString("yyyy-MM-ddTHH:mm:ssZ")}";
+                }
+                else if (column.Format == "time")
+                {
+                    return $"{property} {column.FilterOperator} duration'{value}'";
+                }
+                else if (column.Format == "uuid")
+                {
+                    return $"{property} {column.FilterOperator} {value}";
+                }
+                else if (!string.IsNullOrEmpty(value) && column.FilterOperator == "contains")
+                {
+                    return $"contains({property}, '{value}')";
+                }
+                else if (!string.IsNullOrEmpty(value) && column.FilterOperator == "startswith")
+                {
+                    return $"startswith({property}, '{value}')";
+                }
+                else if (!string.IsNullOrEmpty(value) && column.FilterOperator == "endswith")
+                {
+                    return $"endswith({property}, '{value}')";
+                }
+                else if (!string.IsNullOrEmpty(value) && column.FilterOperator == "eq")
+                {
+                    return $"{property} eq {value}";
+                }
+            }
+            else if (column.Type == "number" || column.Type == "integer")
+            {
+                return $"{property} {column.FilterOperator} {value}";
+            }
+            else if (column.Type == "boolean")
+            {
+                return $"{property} eq {value}";
+            }
+        }
+
+        return "";
+    }
+
+    protected override async Task OnInitAsync()
+    {
+        await Task.Run(() => Reload());
+    }
+
+    protected override Task OnParametersSetAsync()
+    {
+        if (Data != null && LoadData == null)
+        {
+            Count = Data.Count();
+            StateHasChanged();
+        }
+
+        if (Count > 0 && PageSize > 0)
+        {
+            numberOfPages = (int)Math.Ceiling((decimal)Count / PageSize);
+            if (numberOfPages < 1)
+            {
+                numberOfPages = 1;
+            }
+
+            CalculatePager();
+            StateHasChanged();
+        }
+
+        return base.OnParametersSetAsync();
+    }
+
+    int skip;
+    int numberOfPageLinks = 5;
+    int startPage;
+    int endPage;
+    int numberOfPages;
+
+    string orderBy;
+    string where;
+    string oDataWhere;
+
+    Dictionary<string, string> whereFilters = new Dictionary<string, string>();
+    Dictionary<string, string> oDataWhereFilters = new Dictionary<string, string>();
+
+    List<RadzenGridColumn<TItem>> columns = new List<RadzenGridColumn<TItem>>();
+
+    public void AddColumn(RadzenGridColumn<TItem> column)
+    {
+        if (columns.IndexOf(column) == -1)
+        {
+            columns.Add(column);
+        }
+    }
+
+    void CalculatePager()
+    {
+        int visiblePages = Math.Min(numberOfPageLinks, numberOfPages);
+
+        startPage = (int)Math.Max(0, Math.Ceiling((decimal)(GetPage() - (visiblePages / 2))));
+        endPage = Math.Min(numberOfPages - 1, startPage + visiblePages - 1);
+
+        var delta = numberOfPageLinks - (endPage - startPage + 1);
+        startPage = Math.Max(0, startPage - delta);
+    }
+
+    int GetPage()
+    {
+        return (int)Math.Floor((decimal)(skip / PageSize));
+    }
+
+    public void GoToPage(int page)
+    {
+        skip = page * PageSize;
+        CalculatePager();
+        Reload();
+    }
+
+    public void FirstPage()
+    {
+        skip = 0;
+        CalculatePager();
+        Reload();
+    }
+
+    public void PrevPage()
+    {
+        skip = skip - PageSize < 0 ? 0 : skip - PageSize;
+        CalculatePager();
+        Reload();
+    }
+
+    public void NextPage()
+    {
+        int page = GetPage();
+        skip = PageSize * (page < (numberOfPages - 1) ? page + 1 : numberOfPages - 1);
+        CalculatePager();
+        Reload();
+    }
+
+    public void LastPage()
+    {
+        skip = PageSize * (numberOfPages - 1);
+        CalculatePager();
+        Reload();
+    }
+
+    public void OrderBy(string property)
+    {
+        var p = PropertyAccess.GetProperty(property);
+        skip = 0;
+        orderBy = orderBy == $"{p} desc" || orderBy == null || orderBy.IndexOf(p) == -1 ? $"{p} asc" : $"{p} desc";
+        Reload();
+    }
+}

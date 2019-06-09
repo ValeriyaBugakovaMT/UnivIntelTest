@@ -1,0 +1,29 @@
+﻿@functions {
+    [Parameter]
+    public string Text { get; set; }
+
+    [Parameter]
+    public bool Selected { get; set; }
+
+    [Parameter]
+    public RenderFragment ChildContent { get; set; }
+
+    RadzenTabs _tabs;
+
+    [CascadingParameter]
+    public RadzenTabs Tabs
+    {
+        get
+        {
+            return _tabs;
+        }
+        set
+        {
+            if (_tabs != value)
+            {
+                _tabs = value;
+                _tabs.AddTab(this);
+            }
+        }
+    }
+}

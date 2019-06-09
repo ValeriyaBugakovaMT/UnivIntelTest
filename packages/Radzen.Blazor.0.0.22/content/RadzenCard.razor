@@ -1,0 +1,14 @@
+﻿@if(Visible) 
+{
+    <div class="card" style="@Style">@ChildContent</div>
+}
+@functions {
+    [Parameter]
+    public string Style { get; set; }
+
+    [Parameter]
+    public RenderFragment ChildContent { get; set; }
+
+    [Parameter]
+    public bool Visible { get; set; } = true;
+}

@@ -1,0 +1,116 @@
+﻿@using Radzen
+@using System.Linq
+@typeparam TItem
+@if (Visible)
+{
+    <form onsubmit="@OnSubmit">
+        <CascadingValue Value=this>
+            @ChildContent
+        </CascadingValue>
+    </form>
+}
+@functions {
+    [Parameter]
+    public TItem Data { get; set; }
+
+    [Parameter]
+    public RenderFragment ChildContent { get; set; }
+
+    [Parameter]
+    public Action<TItem> Submit { get; set; }
+
+    [Parameter]
+    public bool Visible { get; set; } = true;
+
+    protected void OnSubmit(UIEventArgs args)
+    {
+        if (Data != null)
+        {
+            foreach (IRadzenFormComponent component in components)
+            {
+                SetValue(component);
+            }
+
+            if (validators.All(v => v.IsValid))
+            {
+                Submit?.Invoke(Data);
+            }
+        }
+    }
+
+    List<IRadzenFormComponent> components = new List<IRadzenFormComponent>();
+    List<IRadzenFormValidator> validators = new List<IRadzenFormValidator>();
+
+    public void AddComponent(dynamic component)
+    {
+        if (component is IRadzenFormComponent)
+        {
+            if (components.IndexOf(component) == -1)
+            {
+                ((IRadzenFormComponent)component).ValueChange += (value) => { SetValue(component); };
+
+                components.Add(component);
+
+                GetValue(component);
+            }
+        }
+        else if (component is IRadzenFormValidator)
+        {
+            if (validators.IndexOf(component) == -1)
+            {
+                validators.Add(component);
+            }
+        }
+    }
+
+    void SetValue(dynamic component)
+    {
+        if (Data != null)
+        {
+            var pi = Data.GetType().GetProperty(component.Name);
+            if (pi != null)
+            {
+                if ((component is RadzenTextBox || component is RadzenTextArea) && pi.PropertyType == typeof(byte[]))
+                {
+                    pi.SetValue(Data, System.Text.Encoding.Default.GetBytes((string)component.Value));
+                }
+                else
+                {
+                    pi.SetValue(Data, Radzen.ConvertType.ChangeType(component.Value, pi.PropertyType));
+                }
+
+                var validator = validators.Where(v => v.Component == component.Name).FirstOrDefault();
+                if (validator != null)
+                {
+                    validator.Validate(component);
+                }
+            }
+        }
+    }
+
+    void GetValue(dynamic component)
+    {
+        if (Data != null)
+        {
+            var pi = Data.GetType().GetProperty(component.Name);
+            if (pi != null)
+            {
+                if (component is RadzenTextBox || component is RadzenTextArea)
+                {
+                    if (pi.PropertyType == typeof(byte[]))
+                    {
+                        component.Value = Convert.ToBase64String((byte[])pi.GetValue(Data, null));
+                    }
+                    else
+                    {
+                        component.Value = Convert.ToString(pi.GetValue(Data, null));
+                    }
+                }
+                else
+                {
+                    component.Value = pi.GetValue(Data, null);
+                }
+            }
+        }
+    }
+}

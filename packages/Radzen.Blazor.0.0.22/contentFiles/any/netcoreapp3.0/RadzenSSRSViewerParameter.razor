@@ -1,0 +1,26 @@
+﻿@functions {
+    [Parameter]
+    public string ParameterName { get; set; }
+
+    [Parameter]
+    public string Value { get; set; }
+
+    RadzenSSRSViewer _viewer;
+
+    [CascadingParameter]
+    public RadzenSSRSViewer Viewer
+    {
+        get
+        {
+            return _viewer;
+        }
+        set
+        {
+            if (_viewer != value)
+            {
+                _viewer = value;
+                _viewer.AddParameter(this);
+            }
+        }
+    }
+}

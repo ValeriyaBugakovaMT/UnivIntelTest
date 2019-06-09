@@ -1,0 +1,98 @@
+﻿@if(Visible) 
+{
+<div class="ui-panel ui-widget ui-widget-content ui-corner-all" style="@Style">
+    <div class="ui-panel-titlebar ui-widget-header ui-helper-clearfix ui-corner-all">
+        <div>
+            @if (!string.IsNullOrEmpty(Icon))
+        {
+            <i class="material-icons">@Icon</i>
+        }
+            <span class="material-icons-label">@Text</span>
+        </div>
+        @HeaderTemplate
+        @if(AllowCollapse)
+        {
+            @if(Collapsed)
+            {
+                <a onclick=@Toggle class="ui-panel-titlebar-icon ui-panel-titlebar-toggler ui-corner-all ui-state-default" href="javascript:void(0)" role="tab" id="ui-panel-0-label" aria-controls="ui-panel-0-content" aria-expanded="false">
+                    <span class="pi pi-fw pi-plus"></span>
+                </a>
+            }
+            else
+            {
+                <a onclick=@Toggle class="ui-panel-titlebar-icon ui-panel-titlebar-toggler ui-corner-all ui-state-default" href="javascript:void(0)" role="tab" id="ui-panel-0-label" aria-controls="ui-panel-0-content" aria-expanded="true">
+                    <span class="pi pi-fw pi-minus"></span>
+                </a>
+            }
+        }
+    </div>
+    <div class="ui-fieldset-content-wrapper ng-trigger ng-trigger-fieldsetContent" role="region" id="ui-fieldset-0-content" aria-hidden="false" style="@contentStyle">
+        <div class="ui-fieldset-content">
+            @ChildContent
+        </div>
+        @if(FooterTemplate != null)
+        {
+            <div class="ui-panel-footer ui-widget-content">
+                @FooterTemplate
+            </div>
+        }
+    </div>
+</div>
+}
+@functions {
+    [Parameter]
+    public string Style { get; set; }
+
+    [Parameter]
+    public bool AllowCollapse { get; set; }
+
+    [Parameter]
+    public bool Collapsed { get; set; }
+
+    [Parameter]
+    public string Icon { get; set; }
+
+    [Parameter]
+    public string Text { get; set; } = "";
+
+    [Parameter]
+    public RenderFragment HeaderTemplate { get; set; }
+
+    [Parameter]
+    public RenderFragment FooterTemplate { get; set; }
+
+    [Parameter]
+    public RenderFragment ChildContent { get; set; }
+
+    [Parameter]
+    public Action Expand { get; set; }
+
+    [Parameter]
+    public Action Collapse { get; set; }
+
+    [Parameter]
+    public bool Visible { get; set; } = true;
+
+    string contentStyle = "";
+
+    void Toggle()
+    {
+        Collapsed = !Collapsed;
+        contentStyle = Collapsed ? "height: 0px;" : "";
+
+        if (Collapsed)
+        {
+            Collapse?.Invoke();
+        }
+        else
+        {
+            Expand?.Invoke();
+        }
+    }
+
+    protected override Task OnParametersSetAsync()
+    {
+        contentStyle = Collapsed ? "height: 0px;" : "";
+        return base.OnParametersSetAsync();
+    }
+}

@@ -1,0 +1,40 @@
+﻿@if(Visible) 
+{
+@if (Size == "H1")
+{
+    <h1 class="rz-heading" style="@Style">@Text</h1>
+}
+else if (Size == "H2")
+{
+    <h2 class="rz-heading" style="@Style">@Text</h2>
+}
+else if (Size == "H3")
+{
+    <h3 class="rz-heading" style="@Style">@Text</h3>
+}
+else if (Size == "H4")
+{
+    <h4 class="rz-heading" style="@Style">@Text</h4>
+}
+else if (Size == "H5")
+{
+    <h5 class="rz-heading" style="@Style">@Text</h5>
+}
+else if (Size == "H6")
+{
+    <h6 class="rz-heading" style="@Style">@Text</h6>
+}
+}
+@functions {
+    [Parameter]
+    public string Text { get; set; }
+
+    [Parameter]
+    public string Size { get; set; } = "H1";
+
+    [Parameter]
+    public string Style { get; set; }
+
+    [Parameter]
+    public bool Visible { get; set; } = true;
+}

@@ -32,16 +32,9 @@ namespace WebApplication5.Controllers
         }
         // GET: Admin
      
-        public string addUser(string Title, string Code)
+        public ActionResult addUser()
         {
-            Guid id = Guid.NewGuid();
-            string text = Title;
-            string code = Code;
-            DictCities city = new DictCities { ID = id, Title = text, Code = code };
-            db.DictCities.Add(city);
-            
-            db.SaveChanges();
-            return "true";
+            return View();
         }
         public ActionResult showDictCities()
         {

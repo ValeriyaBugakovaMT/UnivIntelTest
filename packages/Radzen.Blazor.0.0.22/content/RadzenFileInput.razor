@@ -1,0 +1,130 @@
+﻿@using Radzen
+@using Microsoft.JSInterop
+@implements IRadzenFormComponent
+@inject IJSRuntime JSRuntime
+@if (Visible)
+{
+    <div class="ui-fileupload ui-widget">
+        <div class="ui-fileupload-buttonbar ui-widget-header ui-corner-top">
+            <span class="ui-fileupload-choose ui-button ui-widget ui-state-default ui-corner-all ui-button-text-icon-left" icon="pi-upload" label="Choose">
+                <input ref="fileUpload" name="@Name" type="file" accept="@Accept" onchange="@OnChange" />
+                <span class="ui-button-icon-left ui-clickable pi pi-fw pi-upload"></span><span class="ui-button-text ui-clickable">Choose</span>
+            </span>
+        </div>
+        <div class="ui-fileupload-content ui-widget-content ui-corner-bottom">
+            @if (Value != null)
+            {
+                <div class="ui-fileupload-files" style="">
+                    <div class="ui-fileupload-row">
+                        <div>
+                            @if (IsImage)
+                            {
+                                <img style="width:100px;" src="@Value">
+                            }
+                        </div>
+                        <div>
+                            @if (name != null)
+                            {
+                                <span>@name</span>
+                            }
+                        </div>
+                        <div>
+                            @if (size != null)
+                            {
+                                <span>@size</span>
+                            }
+                        </div>
+                        <div>
+                            <button icon="ui-icon-trash" type="button" class="ui-button ui-widget ui-state-default ui-corner-all ui-button-icon-only">
+                                <span class="ui-button-icon-left ui-clickable pi pi-fw ui-icon-trash" onclick="@Remove"></span><span class="ui-button-text ui-clickable">ui-btn</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+}
+@functions {
+    string name = "";
+    string size = "";
+
+    ElementRef fileUpload;
+
+    [Parameter]
+    public string Name { get; set; }
+
+    [Parameter]
+    public string Value { get; set; }
+
+    public bool HasValue
+    {
+        get
+        {
+            return !string.IsNullOrEmpty(Value);
+        }
+    }
+
+    private bool IsImage
+    {
+        get
+        {
+            if (Value == null)
+            {
+                return false;
+            }
+
+            return Value.StartsWith("data:image");
+        }
+    }
+
+    async void OnChange()
+    {
+        Value = await JSRuntime.InvokeAsync<string>("readFileAsBase64", fileUpload);
+        StateHasChanged();
+        Change?.Invoke(Value);
+        ValueChange?.Invoke(Value);
+    }
+
+    dynamic _form;
+
+    [CascadingParameter]
+    public dynamic Form
+    {
+        get
+        {
+            return _form;
+        }
+        set
+        {
+            if (_form != value)
+            {
+                _form = value;
+                _form.AddComponent(this);
+            }
+        }
+    }
+
+    void Remove(UIMouseEventArgs args)
+    {
+        Value = null;
+        StateHasChanged();
+        Change?.Invoke(Value);
+        ValueChange?.Invoke(Value);
+    }
+
+    [Parameter]
+    public string Style { get; set; }
+
+    [Parameter]
+    public bool Visible { get; set; } = true;
+
+    [Parameter]
+    public string Accept { get; set; } = "image/*";
+
+    [Parameter]
+    public Action<string> Change { get; set; }
+
+    [Parameter]
+    public Action<object> ValueChange { get; set; }
+}

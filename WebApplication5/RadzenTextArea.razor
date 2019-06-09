@@ -1,0 +1,112 @@
+﻿@using Radzen
+@implements IRadzenFormComponent
+@if(Visible)
+{
+    @if(ReadOnly)
+    {
+        @if(Disabled)
+        {
+        <textarea name="@Name" rows="@Rows" cols="@Cols" disabled="disabled" readonly="readonly" style="@Style" class="textarea ng-untouched ng-pristine ng-valid" type="text"
+            placeholder="@Placeholder" maxlength="@MaxLength"  bind="@Value"></textarea>
+        } 
+        else 
+        {
+        <textarea name="@Name" rows="@Rows" cols="@Cols" readonly="readonly" style="@Style" class="textarea ng-untouched ng-pristine ng-valid" type="text"
+            placeholder="@Placeholder" maxlength="@MaxLength"  bind="@Value"></textarea>
+        }
+    } 
+    else 
+    {
+        @if(Disabled)
+        {
+        <textarea name="@Name" rows="@Rows" cols="@Cols" disabled="disabled" style="@Style" class="textarea ng-untouched ng-pristine ng-valid" type="text"
+        placeholder="@Placeholder" maxlength="@MaxLength"  bind="@Value"></textarea>
+        } 
+        else 
+        {
+        <textarea name="@Name" rows="@Rows" cols="@Cols" style="@Style" class="textarea ng-untouched ng-pristine ng-valid" type="text"
+        placeholder="@Placeholder" maxlength="@MaxLength"  bind="@Value"></textarea>
+        }
+    }
+}
+@functions {
+    [Parameter]
+    public string Name { get; set; }
+
+    string _value;
+
+    [Parameter]
+    public string Value
+    {
+        get
+        {
+            return _value;
+        }
+        set
+        {
+            if(_value != value)
+            {
+                _value = value;
+                Change?.Invoke(_value);
+                ValueChange?.Invoke(Value);
+            }
+        }
+    }
+
+    public bool HasValue
+    {
+        get
+        {
+            return !string.IsNullOrEmpty(Value);
+        }
+    }
+
+    dynamic _form;
+
+    [CascadingParameter]
+    public dynamic Form
+    {
+        get
+        {
+            return _form;
+        }
+        set
+        {
+            if (_form != value)
+            {
+                _form = value;
+                _form.AddComponent(this);
+            }
+        }
+    }
+
+    [Parameter]
+    public int? MaxLength { get; set; }
+
+    [Parameter]
+    public bool ReadOnly { get; set; }
+
+    [Parameter]
+    public bool Disabled { get; set; }
+
+    [Parameter]
+    public int Rows { get; set; } = 2;
+
+    [Parameter]
+    public int Cols { get; set; } = 20;
+
+    [Parameter]
+    public string Style { get; set; }
+
+    [Parameter]
+    public bool Visible { get; set; } = true;
+
+    [Parameter]
+    public string Placeholder { get; set; }
+
+    [Parameter]
+    public Action<string> Change { get; set; }
+
+    [Parameter]
+    public Action<object> ValueChange { get; set; }
+}
